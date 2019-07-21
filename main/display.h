@@ -7,12 +7,12 @@
 class Display {
   public:
     Display(int sda, int scl);
-//    void setup(int sda, int scl);
-    void setup();
+    ~Display();
     void show(const char* str);
+    void show(const char* str, uint16_t len);
     void clear();
   private:
-    SSD1306* _display;
+    SSD1306 *_display;
 };
 
 #endif

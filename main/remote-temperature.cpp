@@ -1,13 +1,19 @@
-#include "RemoteTemperature.h"
+#include "remote-temperature.h"
 #include "Arduino.h"
+#include "BLEDevice.h"
+#include "BLEScan.h"
+#include "BLEBeacon.h"
+#include "BLEAddress.h"
 
-void RemoteTemperature::setup() {
+static BLEAddress bleAddress("12:3b:6a:1b:67:19");
+
+RemoteTemperature::RemoteTemperature() {
     //Init BLE device
     Serial.println("Remote temperature: setup");
     BLEDevice::init("ESP32");
 }
 
-void RemoteTemperature::display(SSD1306 *display) {
+float RemoteTemperature::getTemp() {
     Serial.println("Remote temperature: display");
     BLEScan* scanner = BLEDevice::getScan();
     Serial.println("Starting scan");
@@ -38,13 +44,10 @@ void RemoteTemperature::display(SSD1306 *display) {
             continue;
         }
 
-        //display on screen
-        char tempStr[12];
-        snprintf(tempStr, sizeof tempStr, "%uc", temp);
-        Serial.println("Displaying temp: " + temp);
-        display->clear();
-        display->drawString(3, 8, String(tempStr).c_str());
-        display->display();
+        Serial.print("Temp: "); Serial.print(temp); Serial.println("*C\t"); 
+
+        return (float) temp;
     }
     Serial.println();
+    return 0.0;
 }

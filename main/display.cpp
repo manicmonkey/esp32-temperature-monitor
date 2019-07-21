@@ -1,6 +1,6 @@
 #include "Arduino.h"
 
-#include "Display.h"
+#include "display.h"
 
 #include <Wire.h>
 #include "SSD1306.h" // alias for `#include "SSD1306Wire.h"` docs - https://github.com/ThingPulse/esp8266-oled-ssd1306
@@ -12,37 +12,45 @@
 //SSD1306 _display;
 
 Display::Display(int sda, int scl) {
-    SSD1306 display(0x3C, sda, scl);
-    _display = &display;
-}
-
-//void Display::setup(int sda, int scl) {
-void Display::setup() {
-  // display setup
+  //Special setup routine required for OLED
   pinMode(RST_OLED, OUTPUT);
   digitalWrite(RST_OLED, LOW);        // turn D16 low to reset OLED
   delay(50);
   digitalWrite(RST_OLED, HIGH);       // while OLED is running, must set D16 in high
 
-//  _display = &SSD1306(0x3C, 4, 15);
+  _display = new SSD1306(0x3C, sda, scl);
   _display->init();
   _display->flipScreenVertically();
-  _display->setFont(Dialog_plain_44);
-  //display.setFont(ArialMT_Plain_24);
+  _display->setFont(Roboto_32);
+// todo center align
   _display->setTextAlignment(TEXT_ALIGN_LEFT);
+}
 
-  // Initialise wire library with OLED I2C pins or the display stops working when we access the temp sensor
-//  Wire.begin(sda, scl);
+Display::~Display() {
+  delete _display;
 }
 
 void Display::show(const char* str) {
+    Serial.print("Show: "); Serial.println(str);
+    show(str, strlen(str));
 //    _display->clear();
-    _display->drawString(3, 8, str);
+//    _display->drawString(10, 14, str);
+//    uint16_t sWidth = _display->getStringWidth(str, length);
+//    _display->display();
+}
+
+void Display::show(const char* str, uint16_t length) {
+    Serial.print("Show: "); Serial.println(str);
+    _display->clear();
+//    _display->drawString(10, 14, str);
+    uint16_t sWidth = _display->getStringWidth(str, length);
+    int16_t offset = 128 - sWidth;
+    _display->drawString(offset / 2, 18, str);
     _display->display();
 }
 
 void Display::clear() {
+  Serial.println("Clear");
   _display->clear();
 //  _display.display();
 }
-

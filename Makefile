@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := bt_discovery
+PROJECT_NAME := temperature_monitor
 
 include $(IDF_PATH)/make/project.mk
 
