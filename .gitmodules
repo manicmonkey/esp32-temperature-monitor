@@ -1,9 +1,9 @@
 [submodule "components/thingpulse-ssd1306"]
 	path = components/thingpulse-ssd1306
-	url = https://github.com/ThingPulse/esp8266-oled-ssd1306.git
+	url = https://github.com/manicmonkey/esp8266-oled-ssd1306.git
 [submodule "components/adafruit-mcp9808"]
 	path = components/adafruit-mcp9808
-	url = https://github.com/adafruit/Adafruit_MCP9808_Library.git
+	url = https://github.com/manicmonkey/Adafruit_MCP9808_Library.git
 [submodule "components/arduino-esp32"]
 	path = components/arduino-esp32
 	url = https://github.com/espressif/arduino-esp32.git
