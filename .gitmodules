@@ -6,4 +6,4 @@
 	url = https://github.com/manicmonkey/Adafruit_MCP9808_Library.git
 [submodule "components/arduino-esp32"]
 	path = components/arduino-esp32
-	url = https://github.com/espressif/arduino-esp32.git
+	url = https://github.com/manicmonkey/arduino-esp32.git
