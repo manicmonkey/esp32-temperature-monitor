@@ -18,6 +18,9 @@ set(COMPONENT_SRCS
         "font.h"
         "wifi-connection.h"
         "wifi-connection.cpp")
+
 set(COMPONENT_ADD_INCLUDEDIRS ".")
+
+set(IDF_COMPILE_DEFINITIONS WIFI_SSID="$ENV{WIFI_SSID}" WIFI_PASSWORD="$ENV{WIFI_PASSWORD}")
 
 register_component()
