@@ -7,9 +7,9 @@
 */
 /**************************************************************************/
 
-#include "Adafruit_MCP9808.h"
+#include "Arduino.h"
 #include "local-temperature.h"
-#include "remote-temperature.h"
+//#include "remote-temperature.h"
 #include "mqtt-connection.h"
 #include "display.h"
 #include "wifi-connection.h"
@@ -21,22 +21,21 @@
 
 #define RST_OLED 16                     //OLED Reset
 
-#define GPIO_BTN 13
+#define GPIO_BTN 17
 #define GPIO_LED 25
 
 #define I2C_SDA 4
 #define I2C_SCL 15
 
-// todo externalise this
-const char *ssid = "ssid";
-const char *password = "password";
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
 
 Display *display;
 
 //BluetoothSerial SerialBT;
 
 LocalTemperature *localTemperature;
-RemoteTemperature *remoteTemperature;
+//RemoteTemperature *remoteTemperature;
 MqttConnection *mqttConnection;
 WifiConnection *wifiConnection;
 
@@ -57,7 +56,7 @@ void setup() {
 
     //Prepare temp sensors
     localTemperature = new LocalTemperature(I2C_SDA, I2C_SCL);
-    remoteTemperature = new RemoteTemperature();
+  //  remoteTemperature = new RemoteTemperature();
 
     //todo what are we doing with this instance? seems like it could be static. maybe should have disconnect to switch
     wifiConnection = new WifiConnection(ssid, password);
@@ -98,23 +97,27 @@ void loop() {
 
     // currently getting a problem with light sleep when built through ESP-IDP :|
     if (isShowRemoteTemperature) {
-        esp_light_sleep_start();
+//        esp_light_sleep_start();
+        delay(3000);
     } else {
         delay(3000);
     }
+
+//    Serial.print("Temp: "); Serial.println(temp);
 
 //  if (SerialBT.hasClient())
 //    SerialBT.print("Temp: "); SerialBT.println(temp);
 
 // Note this disconnects bluetooth SPP
-    //esp_light_sleep_start();
+//    esp_light_sleep_start();
 }
 
 float getTemp() {
     float temp;
 
     if (isShowRemoteTemperature) {
-        temp = remoteTemperature->getTemp();
+//        temp = remoteTemperature->getTemp();
+        temp = 0.0f;
     } else {
         temp = localTemperature->getTemp();
     }
