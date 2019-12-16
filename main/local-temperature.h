@@ -2,6 +2,7 @@
 #define TemperatureDisplay_h
 
 #include "Arduino.h"
+#include "Adafruit_MCP9808.h"
 
 class LocalTemperature {
   public:
