@@ -14,8 +14,6 @@
 #include "display.h"
 #include "wifi-connection.h"
 
-//#include "BluetoothSerial.h"
-
 #define uS_TO_S_FACTOR 1000000    /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  2.0        /* Time ESP32 will go to sleep (in seconds) */
 
@@ -32,8 +30,6 @@ const char *password = WIFI_PASSWORD;
 
 Display *display;
 
-//BluetoothSerial SerialBT;
-
 LocalTemperature *localTemperature;
 //RemoteTemperature *remoteTemperature;
 MqttConnection *mqttConnection;
@@ -47,8 +43,6 @@ void setup() {
     //Setup serial output
     Serial.begin(115200);
     Serial.println("Startup...");
-
-//  SerialBT.begin("ESP32");
 
     //Setup sleep behaviour
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
@@ -103,12 +97,7 @@ void loop() {
         delay(3000);
     }
 
-//    Serial.print("Temp: "); Serial.println(temp);
-
-//  if (SerialBT.hasClient())
-//    SerialBT.print("Temp: "); SerialBT.println(temp);
-
-// Note this disconnects bluetooth SPP
+    // Note this disconnects bluetooth SPP
 //    esp_light_sleep_start();
 }
 
