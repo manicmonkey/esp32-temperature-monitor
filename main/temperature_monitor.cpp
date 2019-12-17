@@ -8,11 +8,12 @@
 /**************************************************************************/
 
 #include "Arduino.h"
+#include "temperature-sensor.h"
 #include "local-temperature.h"
-//#include "remote-temperature.h"
-#include "mqtt-connection.h"
+#include "remote-temperature.h"
 #include "display.h"
 #include "wifi-connection.h"
+#include "mqtt-connection.h"
 
 #define uS_TO_S_FACTOR 1000000    /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  2.0        /* Time ESP32 will go to sleep (in seconds) */
@@ -30,14 +31,14 @@ const char *password = WIFI_PASSWORD;
 
 Display *display;
 
-LocalTemperature *localTemperature;
-//RemoteTemperature *remoteTemperature;
-MqttConnection *mqttConnection;
-WifiConnection *wifiConnection;
+TemperatureSensor *temperatureSensor;
+
+//WifiConnection *wifiConnection;
+//MqttConnection *mqttConnection;
 
 bool isShowRemoteTemperature = false;
 
-float getTemp();
+void toggleSensor();
 
 void setup() {
     //Setup serial output
@@ -48,15 +49,14 @@ void setup() {
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
     Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
 
-    //Prepare temp sensors
-    localTemperature = new LocalTemperature(I2C_SDA, I2C_SCL);
-  //  remoteTemperature = new RemoteTemperature();
+    //Prepare temp sensor
+    temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
 
     //todo what are we doing with this instance? seems like it could be static. maybe should have disconnect to switch
-    wifiConnection = new WifiConnection(ssid, password);
+//    wifiConnection = new WifiConnection(ssid, password);
 
     //todo externlise this, maybe even use mDNS to lookup
-    mqttConnection = new MqttConnection("mqtt://192.168.19.166");
+//    mqttConnection = new MqttConnection("mqtt://192.168.19.166");
 
     //Prepare button and feedback LED
     pinMode(GPIO_BTN, INPUT_PULLUP);
@@ -73,44 +73,38 @@ void loop() {
     if (btnState == LOW) {
         Serial.println("BTN PRESSED");
         digitalWrite(GPIO_LED, HIGH);
-        isShowRemoteTemperature = !isShowRemoteTemperature;
         display->show("OK!");
 
         delay(2000);
         digitalWrite(GPIO_LED, LOW);
         display->show("...");
+        toggleSensor();
     }
 
-    float temp = getTemp();
+    float temp = temperatureSensor->getTemp();
 
     char str[13];
     snprintf(str, sizeof str, "%3.1fc", temp);
 
     display->show(str);
-    mqttConnection->submit("/topic/qos1", str);
+//    mqttConnection->submit("/topic/qos1", str);
 
-    // currently getting a problem with light sleep when built through ESP-IDP :|
-    if (isShowRemoteTemperature) {
-//        esp_light_sleep_start();
-        delay(3000);
-    } else {
-        delay(3000);
-    }
+    delay(3000);
 
-    // Note this disconnects bluetooth SPP
+    // Note this disconnects bluetooth SPP and Wifi
 //    esp_light_sleep_start();
 }
 
-float getTemp() {
-    float temp;
+void toggleSensor() {
+    delete temperatureSensor;
+
+    isShowRemoteTemperature = !isShowRemoteTemperature;
 
     if (isShowRemoteTemperature) {
-//        temp = remoteTemperature->getTemp();
-        temp = 0.0f;
+        temperatureSensor = new RemoteTemperature();
     } else {
-        temp = localTemperature->getTemp();
+        temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
     }
-    return temp;
 }
 
 // ESP-IDF entrypoint - chain into arduino code

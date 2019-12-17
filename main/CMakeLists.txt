@@ -7,6 +7,7 @@ SET (COMPONENT_REQUIRES
 
 set(COMPONENT_SRCS
         "temperature_monitor.cpp"
+        "temperature-sensor.h"
         "local-temperature.h"
         "local-temperature.cpp"
         "remote-temperature.h"

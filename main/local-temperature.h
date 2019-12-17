@@ -3,12 +3,13 @@
 
 #include "Arduino.h"
 #include "Adafruit_MCP9808.h"
+#include "temperature-sensor.h"
 
-class LocalTemperature {
+class LocalTemperature : public TemperatureSensor {
   public:
     LocalTemperature(int sda, int scl);
-    ~LocalTemperature();
-    float getTemp();
+    ~LocalTemperature() override;
+    float getTemp() override;
   private:
     Adafruit_MCP9808 *_tempsensor;
 };
