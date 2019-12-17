@@ -10,13 +10,13 @@
 #include "Arduino.h"
 #include "temperature-sensor.h"
 #include "local-temperature.h"
-#include "remote-temperature.h"
+//#include "remote-temperature.h"
 #include "display.h"
 #include "wifi-connection.h"
 #include "mqtt-connection.h"
 
 #define uS_TO_S_FACTOR 1000000    /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  2.0        /* Time ESP32 will go to sleep (in seconds) */
+#define TIME_TO_SLEEP  3.0        /* Time ESP32 will go to sleep (in seconds) */
 
 #define RST_OLED 16                     //OLED Reset
 
@@ -26,15 +26,15 @@
 #define I2C_SDA 4
 #define I2C_SCL 15
 
-const char *ssid = WIFI_SSID;
+const char *ssid = "ASUS";
 const char *password = WIFI_PASSWORD;
 
 Display *display;
 
 TemperatureSensor *temperatureSensor;
 
-//WifiConnection *wifiConnection;
-//MqttConnection *mqttConnection;
+WifiConnection *wifiConnection;
+MqttConnection *mqttConnection;
 
 bool isShowRemoteTemperature = false;
 
@@ -53,10 +53,10 @@ void setup() {
     temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
 
     //todo what are we doing with this instance? seems like it could be static. maybe should have disconnect to switch
-//    wifiConnection = new WifiConnection(ssid, password);
+    wifiConnection = new WifiConnection(ssid, password);
 
     //todo externlise this, maybe even use mDNS to lookup
-//    mqttConnection = new MqttConnection("mqtt://192.168.19.166");
+    mqttConnection = new MqttConnection("mqtt://192.168.19.166");
 
     //Prepare button and feedback LED
     pinMode(GPIO_BTN, INPUT_PULLUP);
@@ -87,12 +87,10 @@ void loop() {
     snprintf(str, sizeof str, "%3.1fc", temp);
 
     display->show(str);
-//    mqttConnection->submit("/topic/qos1", str);
-
-    delay(3000);
+    mqttConnection->submit("/topic/qos1", str);
 
     // Note this disconnects bluetooth SPP and Wifi
-//    esp_light_sleep_start();
+    esp_light_sleep_start();
 }
 
 void toggleSensor() {
@@ -100,11 +98,11 @@ void toggleSensor() {
 
     isShowRemoteTemperature = !isShowRemoteTemperature;
 
-    if (isShowRemoteTemperature) {
-        temperatureSensor = new RemoteTemperature();
-    } else {
+//    if (isShowRemoteTemperature) {
+//        temperatureSensor = new RemoteTemperature();
+//    } else {
         temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
-    }
+//    }
 }
 
 // ESP-IDF entrypoint - chain into arduino code

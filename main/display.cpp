@@ -9,8 +9,6 @@
 #define RST_OLED 16                     //OLED Reset
 #define OLED_UPDATE_INTERVAL 500        //OLED
 
-//SSD1306 _display;
-
 Display::Display(int sda, int scl) {
   //Special setup routine required for OLED
   pinMode(RST_OLED, OUTPUT);
@@ -31,12 +29,7 @@ Display::~Display() {
 }
 
 void Display::show(const char* str) {
-    Serial.print("Show: "); Serial.println(str);
     show(str, strlen(str));
-//    _display->clear();
-//    _display->drawString(10, 14, str);
-//    uint16_t sWidth = _display->getStringWidth(str, length);
-//    _display->display();
 }
 
 void Display::show(const char* str, uint16_t length) {
@@ -52,5 +45,4 @@ void Display::show(const char* str, uint16_t length) {
 void Display::clear() {
   Serial.println("Clear");
   _display->clear();
-//  _display.display();
 }

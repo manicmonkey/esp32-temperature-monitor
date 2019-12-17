@@ -22,6 +22,6 @@ float LocalTemperature::getTemp() {
   _tempsensor->wake();   // wake up, ready to read!
   float temp = _tempsensor->readTempC();
   _tempsensor->shutdown(); // shutdown MSP9808 - power consumption ~0.1 mikro Ampere
-  Serial.print("Temp: "); Serial.print(temp); Serial.println("*C\t");
+  Serial.print("Temp: "); Serial.print(temp); Serial.println("c\t");
   return temp;
 }

@@ -2,9 +2,12 @@
 #include "wifi-connection.h"
 
 WifiConnection::WifiConnection(const char *ssid, const char *password) {
+    Serial.print("SSID: "); Serial.println(ssid);
+    Serial.print("Password: "); Serial.println(password);
+
     WiFi.begin(ssid, password);
 
-    while (WiFi.status() != WL_CONNECTED) {
+    while (WiFiClass::status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
     }

@@ -28,6 +28,6 @@ MqttConnection::~MqttConnection() {
 }
 
 void MqttConnection::submit(const char *topic, const char *data) {
-    Serial.println("Submit");
+//    Serial.println("Submit");
     esp_mqtt_client_publish(client, topic, data, 0, 1, 0);
 }
