@@ -3,6 +3,8 @@ SET (COMPONENT_REQUIRES
         "adafruit-mcp9808"
         "thingpulse-ssd1306"
         "mqtt"
+        "mdns"
+        "nvs_flash"
         )
 
 set(COMPONENT_SRCS
@@ -14,6 +16,8 @@ set(COMPONENT_SRCS
         "remote-temperature.cpp"
         "mqtt-connection.h"
         "mqtt-connection.cpp"
+        "mdns-lookup.h"
+        "mdns-lookup.cpp"
         "display.h"
         "display.cpp"
         "font.h"
