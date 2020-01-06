@@ -7,13 +7,17 @@
 */
 /**************************************************************************/
 
-#include "Arduino.h"
+#include "display.h"
 #include "temperature-sensor.h"
 #include "local-temperature.h"
-//#include "remote-temperature.h"
-#include "display.h"
-#include "wifi-connection.h"
+#include "remote-temperature.h"
+#include "mdns-lookup.h"
 #include "mqtt-connection.h"
+#include "wifi-connection.h"
+
+//#include <esp_pm.h>
+#include <mdns.h>
+//#include <nvs_flash.h>
 
 #define uS_TO_S_FACTOR 1000000    /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  3.0        /* Time ESP32 will go to sleep (in seconds) */
@@ -26,7 +30,7 @@
 #define I2C_SDA 4
 #define I2C_SCL 15
 
-const char *ssid = "ASUS";
+const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
 Display *display;
@@ -38,25 +42,42 @@ MqttConnection *mqttConnection;
 
 bool isShowRemoteTemperature = false;
 
+static const char *TAG = "TemperatureSensor";
+
 void toggleSensor();
 
 void setup() {
     //Setup serial output
     Serial.begin(115200);
-    Serial.println("Startup...");
+    ESP_LOGI(TAG, "Startup...");
 
     //Setup sleep behaviour
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-    Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
+    ESP_LOGI(TAG, "Setup ESP32 to sleep for every %d Seconds", TIME_TO_SLEEP);
+
+    ESP_LOGI(TAG, "Free heap: %i", ESP.getFreeHeap());
+
+//    esp_pm_config_esp32_t config;
+//    config.light_sleep_enable = true;
+//    config.max_freq_mhz = CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ;
+//    config.min_freq_mhz = CONFIG_ESP32_XTAL_FREQ;
+//    ESP_ERROR_CHECK(esp_pm_configure(&config));
+
+//    esp_pm_lock_handle_t espPmLockHandle;
+//    ESP_ERROR_CHECK(esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "wifi", &espPmLockHandle));
+//    ESP_ERROR_CHECK(esp_pm_lock_acquire(espPmLockHandle));
 
     //Prepare temp sensor
     temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
 
-    //todo what are we doing with this instance? seems like it could be static. maybe should have disconnect to switch
+//    ESP_ERROR_CHECK(nvs_flash_init());
+
+    //todo what are we doing with this instance? seems like it could be static. maybe should have disconnect function so AP can be switched
     wifiConnection = new WifiConnection(ssid, password);
 
-    //todo externlise this, maybe even use mDNS to lookup
-    mqttConnection = new MqttConnection("mqtt://192.168.19.166");
+    std::string mqttAddress("mqtt://");
+    mqttAddress.append(MDNSLookup::lookup("james-xps13"));
+    mqttConnection = new MqttConnection(mqttAddress.c_str());
 
     //Prepare button and feedback LED
     pinMode(GPIO_BTN, INPUT_PULLUP);
@@ -65,13 +86,17 @@ void setup() {
     //Setup OLED
     display = new Display(I2C_SDA, I2C_SCL);
     display->show("Hi!");
+
+    ESP_LOGI(TAG, "Free heap: %i", ESP.getFreeHeap());
 }
 
 void loop() {
+    ESP_LOGI(TAG, "Free heap: %i", ESP.getFreeHeap());
+
     int btnState = digitalRead(GPIO_BTN);
 
     if (btnState == LOW) {
-        Serial.println("BTN PRESSED");
+        ESP_LOGI(TAG, "BTN PRESSED");
         digitalWrite(GPIO_LED, HIGH);
         display->show("OK!");
 
@@ -83,14 +108,17 @@ void loop() {
 
     float temp = temperatureSensor->getTemp();
 
+    if (temp == 0.0)
+        return;
+
     char str[13];
     snprintf(str, sizeof str, "%3.1fc", temp);
 
     display->show(str);
-    mqttConnection->submit("/topic/qos1", str);
+    mqttConnection->submit("/topic/temperature", str);
 
     // Note this disconnects bluetooth SPP and Wifi
-    esp_light_sleep_start();
+//    esp_light_sleep_start();
 }
 
 void toggleSensor() {
@@ -98,20 +126,19 @@ void toggleSensor() {
 
     isShowRemoteTemperature = !isShowRemoteTemperature;
 
-//    if (isShowRemoteTemperature) {
-//        temperatureSensor = new RemoteTemperature();
-//    } else {
+    if (isShowRemoteTemperature) {
+        temperatureSensor = new RemoteTemperature();
+    } else {
         temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
-//    }
+    }
 }
 
 // ESP-IDF entrypoint - chain into arduino code
 extern "C" void app_main() {
-    printf("Hello world!\n");
-
     initArduino();
     setup();
     while (true) {
         loop();
+        delay(2000);
     }
 }
