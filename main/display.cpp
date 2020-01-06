@@ -1,6 +1,6 @@
-#include "Arduino.h"
-
 #include "display.h"
+
+#include "Arduino.h"
 
 #include <Wire.h>
 #include "SSD1306.h" // alias for `#include "SSD1306Wire.h"` docs - https://github.com/ThingPulse/esp8266-oled-ssd1306
@@ -8,6 +8,8 @@
 
 #define RST_OLED 16                     //OLED Reset
 #define OLED_UPDATE_INTERVAL 500        //OLED
+
+static const char *TAG = "Display";
 
 Display::Display(int sda, int scl) {
   //Special setup routine required for OLED
@@ -29,20 +31,16 @@ Display::~Display() {
 }
 
 void Display::show(const char* str) {
-    show(str, strlen(str));
-}
-
-void Display::show(const char* str, uint16_t length) {
-    Serial.print("Show: "); Serial.println(str);
+    ESP_LOGI(TAG, "str=%s", str);
     _display->clear();
 //    _display->drawString(10, 14, str);
-    uint16_t sWidth = _display->getStringWidth(str, length);
+    uint16_t sWidth = _display->getStringWidth(str, strlen(str));
     int16_t offset = 128 - sWidth;
     _display->drawString(offset / 2, 18, str);
     _display->display();
 }
 
 void Display::clear() {
-  Serial.println("Clear");
+  ESP_LOGD(TAG, "Clear");
   _display->clear();
 }

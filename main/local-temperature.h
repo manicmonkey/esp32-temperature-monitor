@@ -1,9 +1,8 @@
-#ifndef TemperatureDisplay_h
-#define TemperatureDisplay_h
+#ifndef LocalTemperature_h
+#define LocalTemperature_h
 
-#include "Arduino.h"
-#include "Adafruit_MCP9808.h"
 #include "temperature-sensor.h"
+#include "Adafruit_MCP9808.h"
 
 class LocalTemperature : public TemperatureSensor {
   public:
