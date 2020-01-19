@@ -1,5 +1,6 @@
 #include "remote-temperature.h"
 #include <esp32-hal-log.h>
+#include <cmath>
 #include "BLEDevice.h"
 #include "BLEScan.h"
 #include "BLEBeacon.h"
@@ -55,5 +56,5 @@ float RemoteTemperature::getTemp() {
         return (float) temp;
     }
 
-    return 0.0;
+    return NAN;
 }

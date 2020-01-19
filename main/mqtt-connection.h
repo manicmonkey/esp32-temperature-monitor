@@ -11,6 +11,7 @@ public:
     void submit(const char *topic, const char *data);
 private:
     esp_mqtt_client_handle_t client;
+    static bool connected; //todo shouldn't be static - prevents multiple instances
     static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
 };
 

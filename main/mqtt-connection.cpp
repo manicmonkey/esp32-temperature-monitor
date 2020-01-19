@@ -31,18 +31,22 @@ MqttConnection::~MqttConnection() {
 
 void MqttConnection::submit(const char *topic, const char *data) {
     ESP_LOGI(TAG, "Publishing value '%s' to topic '%s'", data, topic);
-    esp_mqtt_client_publish(client, topic, data, 0, 1, 0);
+    if (connected)
+        esp_mqtt_client_publish(client, topic, data, 0, 1, 0);
 }
 
+bool MqttConnection::connected = false;
+
 esp_err_t MqttConnection::mqtt_event_handler(esp_mqtt_event_handle_t event) {
-    esp_mqtt_client_handle_t client = event->client;
-    int msg_id;
+//    esp_mqtt_client_handle_t client = event->client;
+//    int msg_id;
     // your_context_t *context = event->context;
     switch (event->event_id) {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
 //            msg_id = esp_mqtt_client_subscribe(client, "/topic/toEsp", 0);
 //            ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+            connected = true;
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
