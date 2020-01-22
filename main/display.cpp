@@ -9,8 +9,6 @@
 #define RST_OLED 16                     //OLED Reset
 #define OLED_UPDATE_INTERVAL 500        //OLED
 
-static const char *TAG = "Display";
-
 Display::Display(int sda, int scl) {
   //Special setup routine required for OLED
   pinMode(RST_OLED, OUTPUT);

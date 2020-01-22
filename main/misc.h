@@ -1,0 +1,6 @@
+#ifndef TEMPERATURE_SENSOR_MISC_H
+#define TEMPERATURE_SENSOR_MISC_H
+
+void printHeapSpace();
+
+#endif //TEMPERATURE_SENSOR_MISC_H

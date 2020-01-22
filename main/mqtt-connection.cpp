@@ -11,7 +11,7 @@
   xQueueSend(queue, &fl, 100);
 }*/
 
-static const char *TAG = "MqttConnection";
+//static const char *TAG = "MqttConnection";
 
 MqttConnection::MqttConnection(const char *uri) {
     ESP_LOGI(TAG, "Creating connection to uri: '%s'", uri);
@@ -72,7 +72,7 @@ esp_err_t MqttConnection::mqtt_event_handler(esp_mqtt_event_handle_t event) {
             ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
             break;
         case MQTT_EVENT_BEFORE_CONNECT:
-            ESP_LOGE(TAG, "MQTT_EVENT_BEFORE_CONNECT");
+            ESP_LOGD(TAG, "MQTT_EVENT_BEFORE_CONNECT");
             break;
         default:
             ESP_LOGI(TAG, "Other event id:%d", event->event_id);
