@@ -14,6 +14,7 @@
 #include "mdns-lookup.h"
 #include "misc.h"
 #include "mqtt-connection.h"
+#include "local-time.h"
 #include "wifi-connection.h"
 
 #include <esp_smartconfig.h>
@@ -32,7 +33,7 @@
 #define I2C_SCL 15
 
 // todo convert to semaphore
-static auto wifi_event_group = xEventGroupCreate(); // NOLINT(cert-err58-cpp)
+auto wifi_event_group = xEventGroupCreate(); // NOLINT(cert-err58-cpp)
 
 Display *display;
 
@@ -43,30 +44,6 @@ MqttConnection *mqttConnection;
 bool isShowRemoteTemperature = false;
 
 void toggleSensor();
-
-char *getTime() {
-    time_t now;
-    time(&now);
-
-    // Set timezone to Australian Eastern Standard Time
-    setenv("TZ", "AEST", 1);
-    tzset();
-
-    struct tm timeinfo{};
-    localtime_r(&now, &timeinfo);
-
-    size_t buf_size = 64;
-    char *strftime_buf = new char[buf_size];
-    strftime(strftime_buf, buf_size, "%FT%T%z", &timeinfo);
-
-    return strftime_buf;
-}
-
-void printTime() {
-    char *time = getTime();
-    ESP_LOGI(TAG, "The current date/time in Brisbane is: %s", time);
-    delete time;
-}
 
 void init_ntp_task(void *param) {
     EventBits_t uxBits;
@@ -120,6 +97,7 @@ void setup() {
 
     // todo a linux command line tool for smart-config would be handy...
 
+    // todo it would be cleaner to use a callback or passthrough the bit flag to avoid potential overlap of flags
     start_wifi(wifi_event_group);
 
 //    esp_pm_config_esp32_t config;

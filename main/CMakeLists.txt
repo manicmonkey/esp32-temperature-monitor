@@ -20,6 +20,8 @@ set(COMPONENT_SRCS
         "misc.cpp"
         "mqtt-connection.h"
         "mqtt-connection.cpp"
+        "local-time.h"
+        "local-time.cpp"
         "display.h"
         "display.cpp"
         "font.h"

@@ -1,0 +1,8 @@
+#ifndef TEMPERATURE_SENSOR_LOCAL_TIME_H
+#define TEMPERATURE_SENSOR_LOCAL_TIME_H
+
+char *getTime();
+
+void printTime();
+
+#endif //TEMPERATURE_SENSOR_LOCAL_TIME_H
