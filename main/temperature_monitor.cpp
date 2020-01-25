@@ -37,7 +37,9 @@ auto wifi_event_group = xEventGroupCreate(); // NOLINT(cert-err58-cpp)
 
 Display *display;
 
-TemperatureSensor *temperatureSensor;
+TemperatureSensor *displaySensor;
+TemperatureSensor *localTemperature;
+TemperatureSensor *remoteTemperature;
 
 MqttConnection *mqttConnection;
 
@@ -111,7 +113,9 @@ void setup() {
 //    ESP_ERROR_CHECK(esp_pm_lock_acquire(espPmLockHandle));
 
     //Prepare temp sensor
-    temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
+    localTemperature = new LocalTemperature(I2C_SDA, I2C_SCL);
+    remoteTemperature = new RemoteTemperature();
+    displaySensor = localTemperature;
 
     xTaskCreate(init_ntp_task, "init_ntp_task", 4096, nullptr, 3, nullptr);
     xTaskCreate(send_to_mqtt_task, "send_to_mqtt_task", 4096, nullptr, 3, nullptr);
@@ -125,6 +129,35 @@ void setup() {
     display->show("Hi!");
 
     printHeapSpace();
+}
+
+void displayTemperature() {
+    float temp = displaySensor->getTemp();
+
+    if (temp == NAN)
+        return;
+
+    char str[13];
+    snprintf(str, sizeof str, "%3.1fc", temp);
+
+    display->show(str);
+}
+
+void submitTemperature(TemperatureSensor *temperatureSensor, const std::string& type) {
+    float temp = temperatureSensor->getTemp();
+
+    if (temp == NAN)
+        return;
+
+    if (mqttConnection) {
+        char *time = getTime();
+        std::ostringstream msg;
+        msg << R"({ "timestamp": ")" << time
+            << R"(", "type": )" << type
+            << R"(", "value": )" << temp << R"( })";
+        mqttConnection->submit("/topic/temperature", msg.str().c_str());
+        delete time;
+    }
 }
 
 void loop() {
@@ -143,37 +176,22 @@ void loop() {
         toggleSensor();
     }
 
-    float temp = temperatureSensor->getTemp();
-
-    if (temp == NAN)
-        return;
-
-    char str[13];
-    snprintf(str, sizeof str, "%3.1fc", temp);
-
-    display->show(str);
-
-    if (mqttConnection) {
-        char *time = getTime();
-        std::ostringstream msg;
-        msg << R"({ "timestamp": ")" << time << R"(", "value": )" << temp << R"( })";
-        mqttConnection->submit("/topic/temperature", msg.str().c_str());
-        delete time;
-    }
+    //todo use queues
+    displayTemperature();
+    submitTemperature(localTemperature, "local");
+    submitTemperature(remoteTemperature, "remote");
 
     // Note this disconnects bluetooth SPP and Wifi
 //    esp_light_sleep_start();
 }
 
 void toggleSensor() {
-    delete temperatureSensor;
-
     isShowRemoteTemperature = !isShowRemoteTemperature;
 
     if (isShowRemoteTemperature) {
-        temperatureSensor = new RemoteTemperature();
+        displaySensor = remoteTemperature;
     } else {
-        temperatureSensor = new LocalTemperature(I2C_SDA, I2C_SCL);
+        displaySensor = localTemperature;
     }
 }
 
