@@ -1,7 +1,7 @@
 #ifndef TEMPERATURE_SENSOR_LOCAL_TIME_H
 #define TEMPERATURE_SENSOR_LOCAL_TIME_H
 
-char *getTime();
+char *formatDatetime(time_t *datetime);
 
 void printTime();
 

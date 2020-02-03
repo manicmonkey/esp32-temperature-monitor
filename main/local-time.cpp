@@ -1,17 +1,13 @@
 #include <ctime>
-#include "time.h"
 #include "esp32-hal-log.h"
 
-char *getTime() {
-    time_t now;
-    time(&now);
-
+char *formatDatetime(time_t *datetime) {
     // Set timezone to Australian Eastern Standard Time
     setenv("TZ", "AEST", 1);
     tzset();
 
     struct tm timeinfo{};
-    localtime_r(&now, &timeinfo);
+    localtime_r(datetime, &timeinfo);
 
     size_t buf_size = 64;
     char *strftime_buf = new char[buf_size];
@@ -21,7 +17,9 @@ char *getTime() {
 }
 
 void printTime() {
-    char *time = getTime();
+    time_t now;
+    time(&now);
+    char *time = formatDatetime(&now);
     ESP_LOGI(TAG, "The current date/time in Brisbane is: %s", time);
     delete time;
 }

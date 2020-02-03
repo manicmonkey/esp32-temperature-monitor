@@ -17,9 +17,11 @@
 #include "local-time.h"
 #include "wifi-connection.h"
 
+#include <ctime>
+#include <sstream>
+#include <freertos/queue.h>
 #include <esp_smartconfig.h>
 #include <esp_sntp.h>
-#include <sstream>
 
 #define uS_TO_S_FACTOR 1000000    /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  3.0        /* Time ESP32 will go to sleep (in seconds) */
@@ -34,6 +36,14 @@
 
 // todo convert to semaphore
 auto wifi_event_group = xEventGroupCreate(); // NOLINT(cert-err58-cpp)
+
+typedef struct {
+    char type[6];
+    time_t time;
+    int temp; // temp celsius multiplied by 10
+} TemperatureReading;
+
+auto temperatureQueue = xQueueCreate(40, sizeof(TemperatureReading)); // NOLINT(cert-err58-cpp)
 
 Display *display;
 
@@ -61,7 +71,7 @@ void init_ntp_task(void *param) {
         sntp_setservername(0, server);
         sntp_init();
     }
-    
+
     // todo don't send mqtt until time sync'd (MQTT_READY == WIFI_CONNECTED & TIME_SYNCED)
     // sntp_set_time_sync_notification_cb
 
@@ -81,7 +91,20 @@ void send_to_mqtt_task(void *param) {
     mqttAddress.append(MDNSLookup::lookup("james-xps13"));
     mqttConnection = new MqttConnection(mqttAddress.c_str());
 
-    vTaskDelete(nullptr);
+    TemperatureReading reading;
+    while (xQueueReceive(temperatureQueue, &reading, portMAX_DELAY)) {
+
+        char *time = formatDatetime(&reading.time);
+        std::ostringstream msgBuffer;
+        msgBuffer << R"({ "timestamp": ")" << time
+                  << R"(", "type": ")" << reading.type
+                  << R"(", "value": )" << (reading.temp / 10.0) << R"( })";
+        delete time;
+
+        mqttConnection->submit("/topic/temperature", msgBuffer.str().c_str());
+
+        ESP_LOGI(TAG, "Free heap: %i", ESP.getFreeHeap());
+    }
 }
 
 void setup() {
@@ -143,21 +166,23 @@ void displayTemperature() {
     display->show(str);
 }
 
-void submitTemperature(TemperatureSensor *temperatureSensor, const std::string& type) {
-    float temp = temperatureSensor->getTemp();
+void submitTemperature(TemperatureSensor *temperatureSensor, const std::string &type) {
+    float tempValue = temperatureSensor->getTemp();
 
     if (temp == NAN)
         return;
 
-    if (mqttConnection) {
-        char *time = getTime();
-        std::ostringstream msg;
-        msg << R"({ "timestamp": ")" << time
-            << R"(", "type": )" << type
-            << R"(", "value": )" << temp << R"( })";
-        mqttConnection->submit("/topic/temperature", msg.str().c_str());
-        delete time;
-    }
+    ESP_LOGI(TAG, "Got temp: %f", tempValue);
+
+    time_t tempTime;
+    time(&tempTime);
+
+    auto tempRecord = TemperatureReading{};
+    strncpy(tempRecord.type, type.c_str(), 6);
+    tempRecord.time = tempTime;
+    tempRecord.temp = (int) (tempValue * 10);
+
+    xQueueSend(temperatureQueue, &tempRecord, 0 /*don't wait if full*/);
 }
 
 void loop() {
@@ -176,7 +201,6 @@ void loop() {
         toggleSensor();
     }
 
-    //todo use queues
     displayTemperature();
     submitTemperature(localTemperature, "local");
     submitTemperature(remoteTemperature, "remote");
