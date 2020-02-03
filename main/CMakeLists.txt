@@ -8,23 +8,23 @@ SET (COMPONENT_REQUIRES
         )
 
 set(COMPONENT_SRCS
-        "temperature_monitor.cpp"
-        "temperature-sensor.h"
+        "display.h"
+        "display.cpp"
+        "font.h"
         "local-temperature.h"
         "local-temperature.cpp"
-        "remote-temperature.h"
-        "remote-temperature.cpp"
+        "local-time.h"
+        "local-time.cpp"
         "mdns-lookup.h"
         "mdns-lookup.cpp"
         "misc.h"
         "misc.cpp"
         "mqtt-connection.h"
         "mqtt-connection.cpp"
-        "local-time.h"
-        "local-time.cpp"
-        "display.h"
-        "display.cpp"
-        "font.h"
+        "remote-temperature.h"
+        "remote-temperature.cpp"
+        "temperature_monitor.cpp"
+        "temperature-sensor.h"
         "wifi-connection.h"
         "wifi-connection.cpp")
 
