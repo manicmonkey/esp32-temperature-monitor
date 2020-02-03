@@ -68,7 +68,7 @@ void send_to_mqtt_task(void *param) {
     ESP_LOGI(TAG, "WiFi Connected to ap");
 
     std::string mqttAddress("mqtt://");
-    mqttAddress.append(MDNSLookup::lookup("james-xps13"));
+    mqttAddress.append(MDNSLookup::lookup("boat-pi"));
     mqttConnection = new MqttConnection(mqttAddress.c_str());
 
     TemperatureReading reading;
@@ -81,7 +81,7 @@ void send_to_mqtt_task(void *param) {
                   << R"(", "value": )" << (reading.temp / 10.0) << R"( })";
         delete time;
 
-        mqttConnection->submit("/topic/temperature", msgBuffer.str().c_str());
+        mqttConnection->submit("temperature", msgBuffer.str().c_str());
 
         ESP_LOGI(TAG, "Free heap: %i", ESP.getFreeHeap());
     }
