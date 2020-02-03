@@ -157,7 +157,7 @@ void setup() {
 void displayTemperature() {
     float temp = displaySensor->getTemp();
 
-    if (temp == NAN)
+    if (isnan(temp))
         return;
 
     char str[13];
@@ -169,7 +169,7 @@ void displayTemperature() {
 void submitTemperature(TemperatureSensor *temperatureSensor, const std::string &type) {
     float tempValue = temperatureSensor->getTemp();
 
-    if (temp == NAN)
+    if (isnan(tempValue))
         return;
 
     ESP_LOGI(TAG, "Got temp: %f", tempValue);
