@@ -23,6 +23,8 @@ set(COMPONENT_SRCS
         "mqtt-connection.cpp"
         "remote-temperature.h"
         "remote-temperature.cpp"
+        "sntp-management.h"
+        "sntp-management.c"
         "temperature_monitor.cpp"
         "temperature-sensor.h"
         "wifi-connection.h"

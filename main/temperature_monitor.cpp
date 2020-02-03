@@ -16,6 +16,7 @@
 #include "mqtt-connection.h"
 #include "local-time.h"
 #include "wifi-connection.h"
+#include "sntp-management.h"
 
 #include <ctime>
 #include <sstream>
@@ -56,27 +57,6 @@ MqttConnection *mqttConnection;
 bool isShowRemoteTemperature = false;
 
 void toggleSensor();
-
-void init_ntp_task(void *param) {
-    EventBits_t uxBits;
-
-    do {
-        uxBits = xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_BIT, false, false, portMAX_DELAY);
-    } while (!(uxBits & WIFI_CONNECTED_BIT));
-
-    if (!sntp_enabled()) {
-        ESP_LOGI(TAG, "Setting up NTP");
-        sntp_setoperatingmode(SNTP_OPMODE_POLL);
-        char server[] = "pool.ntp.org";
-        sntp_setservername(0, server);
-        sntp_init();
-    }
-
-    // todo don't send mqtt until time sync'd (MQTT_READY == WIFI_CONNECTED & TIME_SYNCED)
-    // sntp_set_time_sync_notification_cb
-
-    vTaskDelete(nullptr);
-}
 
 void send_to_mqtt_task(void *param) {
     EventBits_t uxBits;
@@ -140,7 +120,7 @@ void setup() {
     remoteTemperature = new RemoteTemperature();
     displaySensor = localTemperature;
 
-    xTaskCreate(init_ntp_task, "init_ntp_task", 4096, nullptr, 3, nullptr);
+    start_sntp_task(wifi_event_group, WIFI_CONNECTED_BIT);
     xTaskCreate(send_to_mqtt_task, "send_to_mqtt_task", 4096, nullptr, 3, nullptr);
 
     //Prepare button and feedback LED
