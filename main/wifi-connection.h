@@ -5,6 +5,8 @@
 
 static const uint8_t WIFI_CONNECTED_BIT = BIT0;
 
-void start_wifi(EventGroupHandle_t wifi_event_group);
+void init_wifi(EventGroupHandle_t wifi_event_group);
+void start_wifi();
+void stop_wifi();
 
 #endif //TEMPERATURE_SENSOR_WIFI_CONNECTION_H

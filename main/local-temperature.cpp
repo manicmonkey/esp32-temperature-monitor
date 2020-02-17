@@ -13,6 +13,15 @@ LocalTemperature::LocalTemperature(int sda, int scl) {
   }
 }
 
+void LocalTemperature::start() {
+    _tempsensor->wake();   // wake up, ready to read!
+
+}
+
+void LocalTemperature::stop() {
+    _tempsensor->shutdown(); // shutdown MSP9808 - power consumption ~0.1 mikro Ampere
+}
+
 LocalTemperature::~LocalTemperature() {
   _tempsensor->shutdown();
   delete _tempsensor;
@@ -20,9 +29,7 @@ LocalTemperature::~LocalTemperature() {
 }
 
 float LocalTemperature::getTemp() {
-  _tempsensor->wake();   // wake up, ready to read!
   float temp = _tempsensor->readTempC();
-  _tempsensor->shutdown(); // shutdown MSP9808 - power consumption ~0.1 mikro Ampere
   ESP_LOGI(TAG, "temp=%3.1fc", temp);
   return temp;
 }

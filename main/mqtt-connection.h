@@ -7,6 +7,8 @@
 class MqttConnection {
 public:
     explicit MqttConnection(const char *uri);
+    void start();
+    void stop();
     ~MqttConnection();
     void submit(const char *topic, const char *data);
 private:

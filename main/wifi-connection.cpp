@@ -84,7 +84,7 @@ static esp_err_t system_event_handler(void *ctx, system_event_t *event) {
     return ESP_OK;
 }
 
-void start_wifi(EventGroupHandle_t wifi_event_group) {
+void init_wifi(EventGroupHandle_t wifi_event_group) {
     ESP_ERROR_CHECK(nvs_flash_init())
 
     tcpip_adapter_init();
@@ -95,6 +95,14 @@ void start_wifi(EventGroupHandle_t wifi_event_group) {
     ESP_ERROR_CHECK(esp_wifi_init(&cfg))
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH)) //instead of WIFI_STORAGE_RAM
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA))
+}
+
+void start_wifi() {
     ESP_ERROR_CHECK(esp_wifi_start())
     ESP_ERROR_CHECK(esp_wifi_connect())
+}
+
+void stop_wifi() {
+    esp_wifi_disconnect();
+    esp_wifi_stop();
 }

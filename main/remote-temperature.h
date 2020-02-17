@@ -13,6 +13,8 @@
 class RemoteTemperature : public TemperatureSensor {
 public:
     RemoteTemperature();
+    void start() override;
+    void stop() override;
     float getTemp() override;
 };
 

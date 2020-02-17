@@ -8,6 +8,8 @@ class LocalTemperature : public TemperatureSensor {
   public:
     LocalTemperature(int sda, int scl);
     ~LocalTemperature() override;
+    void start() override;
+    void stop() override;
     float getTemp() override;
   private:
     Adafruit_MCP9808 *_tempsensor;

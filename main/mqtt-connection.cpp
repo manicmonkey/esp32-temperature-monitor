@@ -21,12 +21,19 @@ MqttConnection::MqttConnection(const char *uri) {
     mqtt_cfg->event_handle = MqttConnection::mqtt_event_handler;
 
     client = esp_mqtt_client_init(mqtt_cfg);
-    esp_mqtt_client_start(client);
 }
 
 MqttConnection::~MqttConnection() {
     ESP_LOGI(TAG, "Destroy");
     esp_mqtt_client_destroy(client);
+}
+
+void MqttConnection::start() {
+    esp_mqtt_client_start(client);
+}
+
+void MqttConnection::stop() {
+    esp_mqtt_client_stop(client);
 }
 
 void MqttConnection::submit(const char *topic, const char *data) {
